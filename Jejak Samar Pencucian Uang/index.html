@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jejak Samar Pencucian Uang</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        :root {
+            /* New "Aurora" Color Palette */
+            --accent-red: #f43f5e; /* Rose 500 */
+            --accent-blue: #3b82f6; /* Blue 500 */
+            
+            /* Light Theme */
+            --light-bg: #f1f5f9; /* Slate 100 */
+            --light-bg-alt: #ffffff;
+            --light-text: #0f172a; /* Slate 900 */
+            --light-text-secondary: #475569; /* Slate 600 */
+            --light-border: #cbd5e1; /* Slate 300 */
+            
+            /* Dark Theme */
+            --dark-bg: #0b1120; /* Deep blue/slate */
+            --dark-bg-alt: #1e293b; /* Slate 800 */
+            --dark-text: #e2e8f0; /* Slate 200 */
+            --dark-text-secondary: #94a3b8; /* Slate 400 */
+            --dark-border: #334155; /* Slate 700 */
+        }
+
+        [data-theme="light"] {
+            --bg-color: var(--light-bg);
+            --bg-alt-color: var(--light-bg-alt);
+            --text-color: var(--light-text);
+            --text-secondary-color: var(--light-text-secondary);
+            --border-color: var(--light-border);
+            --accent-color: var(--accent-blue);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: var(--dark-bg);
+            --bg-alt-color: var(--dark-bg-alt);
+            --text-color: var(--dark-text);
+            --text-secondary-color: var(--dark-text-secondary);
+            --border-color: var(--dark-border);
+            --accent-color: #60a5fa; /* Lighter blue for dark mode */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        /* Aurora Background Decoration */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image: radial-gradient(circle at 15% 25%, rgba(59, 130, 246, 0.1), transparent 40%),
+                              radial-gradient(circle at 85% 75%, rgba(244, 63, 94, 0.1), transparent 40%);
+            z-index: -1;
+            transition: opacity 0.5s ease;
+        }
+        [data-theme="dark"] body::before {
+            background-image: radial-gradient(circle at 15% 25%, rgba(96, 165, 250, 0.1), transparent 40%),
+                              radial-gradient(circle at 85% 75%, rgba(244, 63, 94, 0.1), transparent 40%);
+        }
+
+        /* Enhanced Depth & Card Styles */
+        .deep-card {
+            background-color: var(--bg-alt-color);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem; /* 16px */
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03), 0 2px 4px -2px rgba(0,0,0,0.03);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .deep-card:hover {
+            transform: translateY(-6px) scale(1.01);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.05);
+        }
+        .text-secondary { color: var(--text-secondary-color); }
+        .accent-text { color: var(--accent-color); }
+        .accent-red { color: var(--accent-red); }
+
+        /* Perbaikan Animasi Fade-in-up */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Accordion */
+        .accordion-content {
+            max-height: 0; overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+            border-top: 1px solid var(--border-color);
+        }
+        .accordion-button.active .accordion-icon {
+            transform: rotate(180deg);
+        }
+        /* Style baru untuk accordion aktif */
+        .accordion-button.active {
+            background-color: color-mix(in srgb, var(--accent-color) 10%, transparent);
+        }
+        .accordion-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary-color); }
+        
+        /* Nav active state */
+        .nav-link.active {
+            color: var(--accent-color);
+            background-color: color-mix(in srgb, var(--accent-color) 15%, transparent);
+            font-weight: 600;
+        }
+
+        /* Mobile Nav */
+        #mobile-nav-menu {
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            transform: translateY(-20px);
+            opacity: 0;
+            pointer-events: none;
+        }
+        #mobile-nav-menu.open {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Style Perlindungan Konten */
+        .no-select {
+            -webkit-user-select: none; /* Safari */
+            -ms-user-select: none; /* IE 10+ */
+            user-select: none; /* Standard */
+        }
+        /* Sembunyikan saat print */
+        @media print {
+            body {
+                display: none;
+                visibility: hidden;
+            }
+        }
+
+        /* Style untuk Pesan Toast (Perlindungan Konten) - Dihapus di JS nanti */
+        .toast-message {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 1000;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        /* --- Style Baru untuk Fitur Navigasi --- */
+
+        /* Tombol Back to Top */
+        #back-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 10px;
+            border-radius: 9999px; /* full */
+            display: none; /* Sembunyi by default */
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        #back-to-top:hover {
+            transform: scale(1.1);
+            opacity: 0.9;
+        }
+
+        /* Search Input */
+        .search-input {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-size: 14px;
+        }
+        .search-input:focus {
+            outline: 2px solid var(--accent-color);
+            outline-offset: 2px;
+            border-color: var(--accent-color);
+        }
+
+        /* Tab Interface */
+        .tab-button {
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            color: var(--text-secondary-color);
+        }
+        .tab-button:hover {
+            color: var(--text-color);
+        }
+        .tab-button.active {
+            color: var(--accent-color);
+            border-bottom-color: var(--accent-color);
+        }
+        .tab-content {
+            padding-top: 1.5rem; /* pt-6 */
+        }
+
+        /* Table Row Hover */
+        tbody tr:hover {
+            background-color: color-mix(in srgb, var(--border-color) 30%, transparent);
+        }
+
+        /* --- Style Baru untuk Glosarium (Request 6) --- */
+        .glossary-card {
+            background-color: var(--bg-alt-color);
+            border-radius: 0.75rem; /* 12px */
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .glossary-card:hover {
+            transform: translateY(-6px) scale(1.01); /* Efek "3D" lift */
+            box-shadow: 0 10px 20px -5px rgba(0,0,0,0.07), 0 4px 6px -4px rgba(0,0,0,0.05);
+        }
+        .glossary-button {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 1.25rem; /* p-5 */
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-color);
+            transition: background-color 0.2s ease;
+        }
+        .glossary-button:hover {
+            color: var(--accent-color);
+        }
+        .glossary-icon {
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Efek rotasi "bouncy" */
+            flex-shrink: 0;
+            color: var(--accent-color);
+        }
+        .glossary-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
+            font-size: 0.875rem; /* text-sm */
+            color: var(--text-secondary-color);
+            padding-left: 1.25rem; /* px-5 */
+            padding-right: 1.25rem; /* px-5 */
+        }
+        .glossary-button.active + .glossary-content {
+            max-height: 250px; /* Cukup untuk deskripsi */
+            padding-bottom: 1.25rem; /* pb-5 */
+        }
+        .glossary-button.active .glossary-icon {
+            transform: rotate(45deg); /* Icon '+' berputar menjadi 'x' */
+        }
+        /* --- Akhir Style Baru --- */
+    </style>
+</head>
+<body class="antialiased no-select">
+
+    <!-- Kontainer Utama -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="lg:flex lg:gap-8">
+            
+            <!-- Navigasi Sidebar (Desktop) -->
+            <aside class="hidden lg:block w-64 h-screen sticky top-0 py-8">
+                <div class="h-full flex flex-col space-y-8">
+                    <div class="px-4 flex items-center gap-3">
+                        <i data-lucide="eye" class="w-8 h-8 accent-text"></i>
+                        <div>
+                            <h1 class="font-bold text-xl leading-tight">Tindak Pidana Pencucian Uang</h1>
+                            <p class="text-xs text-secondary">Modus di Indonesia</p>
+                        </div>
+                    </div>
+
+                    <!-- Search Bar Baru (Desktop) -->
+                    <div class="px-4">
+                        <label for="search-desktop" class="text-xs font-medium text-secondary mb-1 block">Filter Konten</label>
+                        <div class="relative">
+                            <input type="search" id="search-desktop" placeholder="Cari istilah (cth: smurfing)..." class="search-input !pl-9">
+                            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-secondary"></i>
+                        </div>
+                    </div>
+
+                    <nav id="desktop-nav" class="flex-grow flex flex-col space-y-2 overflow-y-auto">
+                        <a href="#pendahuluan" class="nav-link text-sm font-medium px-4 py-2.5 rounded-lg transition-colors duration-200 flex items-center gap-3"><i data-lucide="play-circle" class="w-5 h-5"></i> Pendahuluan</a>
+                        <a href="#konteks" class="nav-link text-sm font-medium px-4 py-2.5 rounded-lg transition-colors duration-200 flex items-center gap-3"><i data-lucide="help-circle" class="w-5 h-5"></i> Mengapa Peduli?</a>
+                        <a href="#modus" class="nav-link text-sm font-medium px-4 py-2.5 rounded-lg transition-colors duration-200 flex items-center gap-3"><i data-lucide="network" class="w-5 h-5"></i> Membongkar Modus</a>
+                        <a href="#data" class="nav-link text-sm font-medium px-4 py-2.5 rounded-lg transition-colors duration-200 flex items-center gap-3"><i data-lucide="database" class="w-5 h-5"></i> Data & Fakta</a>
+                        <a href="#glosarium" class="nav-link text-sm font-medium px-4 py-2.5 rounded-lg transition-colors duration-200 flex items-center gap-3"><i data-lucide="book-open" class="w-5 h-5"></i> Glosarium</a>
+                        <a href="#penutup" class="nav-link text-sm font-medium px-4 py-2.5 rounded-lg transition-colors duration-200 flex items-center gap-3"><i data-lucide="lightbulb" class="w-5 h-5"></i> Refleksi</a>
+                    </nav>
+                    <div class="px-4">
+                        <p class="text-xs text-secondary mb-2 font-medium">Mode Tampilan</p>
+                         <div class="flex items-center p-1 rounded-full border" style="background-color: var(--bg-color); border-color: var(--border-color);">
+                            <button id="theme-light" class="p-1.5 rounded-full flex-1" title="Mode Terang"><i data-lucide="sun" class="w-5 h-5 mx-auto"></i></button>
+                            <button id="theme-dark" class="p-1.5 rounded-full flex-1" title="Mode Gelap"><i data-lucide="moon" class="w-5 h-5 mx-auto"></i></button>
+                            <button id="theme-system" class="p-1.5 rounded-full flex-1" title="Sistem Default"><i data-lucide="monitor" class="w-5 h-5 mx-auto"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Konten Utama -->
+            <main class="flex-1 min-w-0 py-8">
+                
+                <!-- Header Mobile -->
+                <header class="lg:hidden sticky top-0 z-40 w-full mb-8">
+                    <div class="deep-card p-3 flex items-center justify-between">
+                         <div class="flex items-center gap-3">
+                            <i data-lucide="eye" class="w-7 h-7 accent-text"></i>
+                            <div>
+                                <h1 class="font-bold text-lg leading-tight">Tindak Pidana Pencucian Uang</h1>
+                                <p class="text-xs text-secondary">Modus di Indonesia</p>
+                            </div>
+                        </div>
+                        <button id="mobile-menu-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700">
+                            <i data-lucide="menu" class="w-6 h-6"></i>
+                            <i data-lucide="x" class="w-6 h-6 hidden"></i>
+                        </button>
+                    </div>
+                    <!-- Menu Navigasi Mobile -->
+                    <div id="mobile-nav-menu" class="absolute top-full left-0 w-full mt-2">
+                        <nav class="deep-card p-4 flex flex-col space-y-2">
+                            <!-- Search Bar Baru (Mobile) -->
+                             <div class="px-4 mb-2">
+                                <label for="search-mobile" class="text-xs font-medium text-secondary mb-1 block">Filter Konten</label>
+                                <div class="relative">
+                                    <input type="search" id="search-mobile" placeholder="Cari istilah..." class="search-input !pl-9">
+                                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-secondary"></i>
+                                </div>
+                            </div>
+
+                             <a href="#pendahuluan" class="nav-link mobile-link text-sm font-medium px-4 py-2.5 rounded-lg flex items-center gap-3"><i data-lucide="play-circle" class="w-5 h-5"></i> Pendahuluan</a>
+                             <a href="#konteks" class="nav-link mobile-link text-sm font-medium px-4 py-2.5 rounded-lg flex items-center gap-3"><i data-lucide="help-circle" class="w-5 h-5"></i> Mengapa Peduli?</a>
+                             <a href="#modus" class="nav-link mobile-link text-sm font-medium px-4 py-2.5 rounded-lg flex items-center gap-3"><i data-lucide="network" class="w-5 h-5"></i> Membongkar Modus</a>
+                             <a href="#data" class="nav-link mobile-link text-sm font-medium px-4 py-2.5 rounded-lg flex items-center gap-3"><i data-lucide="database" class="w-5 h-5"></i> Data & Fakta</a>
+                             <a href="#glosarium" class="nav-link mobile-link text-sm font-medium px-4 py-2.5 rounded-lg flex items-center gap-3"><i data-lucide="book-open" class="w-5 h-5"></i> Glosarium</a>
+                             <a href="#penutup" class="nav-link mobile-link text-sm font-medium px-4 py-2.5 rounded-lg flex items-center gap-3"><i data-lucide="lightbulb" class="w-5 h-5"></i> Refleksi</a>
+                             <div class="pt-4">
+                                <div class="px-4">
+                                    <p class="text-xs text-secondary mb-2 font-medium">Mode Tampilan</p>
+                                     <div class="flex items-center p-1 rounded-full border" style="background-color: var(--bg-color); border-color: var(--border-color);">
+                                        <button id="theme-light-mobile" class="p-1.5 rounded-full flex-1" title="Mode Terang"><i data-lucide="sun" class="w-5 h-5 mx-auto"></i></button>
+                                        <button id="theme-dark-mobile" class="p-1.5 rounded-full flex-1" title="Mode Gelap"><i data-lucide="moon" class="w-5 h-5 mx-auto"></i></button>
+                                        <button id="theme-system-mobile" class="p-1.5 rounded-full flex-1" title="Sistem Default"><i data-lucide="monitor" class="w-5 h-5 mx-auto"></i></button>
+                                    </div>
+                                </div>
+                             </div>
+                        </nav>
+                    </div>
+                </header>
+                
+                <!-- Bagian Hero -->
+                <section id="hero" class="mb-12">
+                    <div class="relative rounded-2xl overflow-hidden p-8 md:p-12 min-h-[300px] flex flex-col justify-center text-white deep-card">
+                         <!-- Gambar 1 (Hero): Aliran Data Digital [MODIFIKASI] -->
+                         <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=2070&auto=format&fit=crop" 
+                             alt="Ilustrasi aliran data digital yang kompleks" 
+                             class="absolute inset-0 w-full h-full object-cover z-0"
+                             style="animation: fadeIn 1.5s ease-out;"
+                             onerror="this.src='https://placehold.co/1920x1080/0b1120/e2e8f0?text=Jejak+Samar'">
+                         <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/70 to-transparent z-10"></div>
+                         <div class="relative z-20">
+                            <h1 class="text-3xl md:text-5xl font-extrabold mb-4 tracking-tight" style="animation: fadeInUp 0.8s ease-out 0.2s backwards;">Jejak Samar Uang Haram</h1>
+                            <p class="text-lg text-slate-300 max-w-2xl" style="animation: fadeInUp 0.8s ease-out 0.4s backwards;">Kajian investigatif-analitis modus pencucian uang (TPPU) yang marak di Indonesia.</p>
+                         </div>
+                    </div>
+                </section>
+
+                 <!-- Bagian 1: Disclaimer & Waktu Baca -->
+                <section id="pendahuluan" class="scroll-mt-24">
+                    <div class="deep-card p-6 md:p-8 fade-in-up">
+                        <div class="md:flex md:justify-between md:items-center">
+                            <div>
+                                <h2 class="text-2xl md:text-3xl font-bold mb-4 flex items-center gap-3"><i data-lucide="play-circle" class="w-8 h-8 accent-red"></i>Mulai dari Sini</h2>
+                                <p class="text-secondary text-sm max-w-3xl">
+                                    Artikel ini ditulis murni untuk tujuan edukasi berdasarkan analisis data dan fakta yang tersedia untuk umum. Ini bukan merupakan karya ilmiah akademik formal ataupun rilis jurnalistik. Tujuannya adalah memetakan modus operandi untuk meningkatkan kesadaran publik.
+                                </p>
+                            </div>
+                            <div class="mt-6 md:mt-0 md:ml-6 text-center md:text-right flex-shrink-0">
+                                <div class="inline-block p-4 rounded-lg" style="background-color: var(--bg-color);">
+                                    <div class="text-xs text-secondary uppercase font-semibold">Estimasi Waktu Baca</div>
+                                    <div id="reading-time" class="text-2xl font-bold accent-text">-- menit</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Kontainer Bagian -->
+                <div class="space-y-16 md:space-y-24 mt-16 md:mt-24">
+                    <!-- Bagian 2: Konteks & Relevansi -->
+                    <section id="konteks" class="scroll-mt-24 fade-in-up">
+                        <h2 class="text-2xl md:text-3xl font-bold mb-8 text-center"><i data-lucide="help-circle" class="w-8 h-8 mr-3 inline-block accent-text"></i>Mengapa Kita Harus Peduli?</h2>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="deep-card p-6">
+                                <h3 class="font-bold text-xl mb-3">Dampak Nyata Uang Kotor</h3>
+                                <p class="text-sm text-secondary mb-4">Pencucian uang bukan sekadar "membersihkan" uang. Ini adalah oli yang membuat mesin kejahatan terus berjalan. Dampaknya:</p>
+                                <ul class="list-disc list-inside space-y-2 text-sm text-secondary">
+                                    <li><span class="font-semibold text-inherit">Merusak Ekonomi:</span> Harga properti bisa melonjak tidak wajar karena dibeli oleh pelaku TPPU.</li>
+                                    <li><span class="font-semibold text-inherit">Merusak Persaingan:</span> Bisnis sah (misal: restoran jujur) kalah bersaing dengan restoran fiktif milik pelaku.</li>
+                                    <li><span class="font-semibold text-inherit">Mendanai Kejahatan Lain:</span> Uang bersih dipakai lagi untuk modal korupsi, membeli narkoba, atau mendanai terorisme.</li>
+                                </ul>
+                            </div>
+                            <div class="deep-card p-6">
+                                <h3 class="font-bold text-xl mb-3">Analogi Sederhana: Mesin Cuci Uang</h3>
+                                <!-- Gambar 2 (Analogi): Mesin Cuci [MODIFIKASI BARU] -->
+                                <img src="https://images.pexels.com/photos/3992864/pexels-photo-3992864.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" 
+                                     alt="Close-up drum mesin cuci yang sedang berputar" 
+                                     class="w-full h-48 object-cover rounded-lg mb-4"
+                                     onerror="this.src='https://placehold.co/600x400/f43f5e/white?text=Analogi+Mesin+Cuci'">
+                                     
+                                <p class="text-sm text-secondary">Bayangkan uang haram itu seperti pakaian yang penuh noda lumpur. Anda tidak bisa langsung memakainya ke pesta. Proses pencucian uang memiliki tiga tahap sederhana:</p>
+                                <ol class="list-decimal list-inside space-y-2 mt-3 text-sm text-secondary">
+                                    <li><span class="font-semibold text-inherit">Placement (Penempatan):</span> Memasukkan pakaian kotor (uang tunai) ke mesin cuci (bank).</li>
+                                    <li><span class="font-semibold text-inherit">Layering (Pelapisan):</span> Proses mencuci, memutar, dan membilas (transfer berlapis) agar noda hilang (jejak terputus).</li>
+                                    <li><span class="font-semibold text-inherit">Integration (Integrasi):</span> Pakaian bersih (uang 'sah') keluar dan dipakai (dibelikan properti/mobil mewah).</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Bagian 3: Membongkar Modus (Inti + Tabel) -->
+                    <section id="modus" class="scroll-mt-24 fade-in-up">
+                        <h2 class="text-2xl md:text-3xl font-bold mb-8 text-center"><i data-lucide="network" class="w-8 h-8 mr-3 inline-block accent-red"></i>Tiga Babak dalam "Ritual" Pencucian Uang</h2>
+                        <p class="text-center text-secondary max-w-3xl mx-auto mb-10">Setiap tahap pencucian uang memiliki modus operandinya sendiri, dari yang paling kuno hingga yang memanfaatkan teknologi terkini. Berikut adalah ragam modus yang teridentifikasi marak di Indonesia.</p>
+                        
+                        <!-- Struktur Tab Baru -->
+                        <div class="deep-card">
+                            <!-- Navigasi Tab -->
+                            <div class="border-b" style="border-color: var(--border-color);">
+                                <nav class="flex -mb-px px-6" aria-label="Tabs">
+                                    <button class="tab-button active" data-target="tab-placement">
+                                        <i data-lucide="log-in" class="w-4 h-4 mr-2 inline-block"></i>
+                                        1. Placement
+                                    </button>
+                                    <button class="tab-button" data-target="tab-layering">
+                                        <i data-lucide="layers" class="w-4 h-4 mr-2 inline-block"></i>
+                                        2. Layering
+                                    </button>
+                                    <button class="tab-button" data-target="tab-integration">
+                                        <i data-lucide="check-circle" class="w-4 h-4 mr-2 inline-block"></i>
+                                        3. Integration
+                                    </button>
+                                </nav>
+                            </div>
+
+                            <!-- Konten Tab -->
+                            <div class="p-6 md:p-8">
+                                <!-- Tahap 1: Placement -->
+                                <div id="tab-placement" class="tab-content">
+                                    <h3 class="font-bold text-xl mb-4 accent-text">Tahap 1: Placement (Menempatkan Uang Kotor)</h3>
+                                    <p class="text-sm text-secondary mb-4">Tujuan: Memasukkan uang tunai hasil kejahatan (misal: korupsi, narkotika, judi) ke dalam sistem keuangan formal agar tidak lagi berbentuk tunai.</p>
+                                    
+                                    <!-- Gambar 3 (Placement): Aset Mewah [MODIFIKASI] -->
+                                    <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=2070&auto=format&fit=crop" 
+                                         alt="Deretan mobil sport mewah" 
+                                         class="w-full h-56 object-cover rounded-lg mb-6"
+                                         onerror="this.src='https://placehold.co/600x400/3b82f6/white?text=Aset+Mewah'">
+
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-sm text-left">
+                                            <thead class="text-xs uppercase" style="background-color: color-mix(in srgb, var(--bg-color) 50%, var(--bg-alt-color));">
+                                                <tr>
+                                                    <th scope="col" class="px-6 py-3">Modus Operandi</th>
+                                                    <th scope="col" class="px-6 py-3">Cara Kerja Sederhana</th>
+                                                    <th scope="col" class="px-6 py-3">Contoh di Indonesia</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr class="border-b" style="border-color: var(--border-color);">
+                                                    <td class="px-6 py-4 font-semibold">Smurfing / Structuring</td>
+                                                    <td class="px-6 py-4">Menyetor uang tunai dalam jumlah kecil-kecil (di bawah batas lapor PPATK) melalui banyak rekening atau banyak 'kaki tangan'.</td>
+                                                    <td class="px-6 py-4">Jaringan narkoba menggunakan puluhan rekening orang lain untuk menyetor hasil penjualan.</td>
+                                                </tr>
+                                                <tr class="border-b" style="border-color: var(--border-color);">
+                                                    <td class="px-6 py-4 font-semibold">Pembelian Aset Tunai</td>
+                                                    <td class="px-6 py-4">Membeli aset bernilai tinggi (mobil mewah, properti, emas, jam tangan) secara tunai. Aset ini bisa dijual kembali nanti.</td>
+                                                    <td class="px-6 py-4">Koruptor membeli beberapa mobil mewah atas nama supir atau kerabatnya.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="px-6 py-4 font-semibold">Penyelundupan Uang Tunai</td>
+                                                    <td class="px-6 py-4">Membawa uang tunai secara fisik ke luar negeri (ke negara suaka pajak) untuk disimpan di bank di sana.</td>
+                                                    <td class="px-6 py-4">Menyimpan uang di koper dan terbang ke Singapura atau Swiss.</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Tahap 2: Layering -->
+                                <div id="tab-layering" class="tab-content hidden">
+                                    <h3 class="font-bold text-xl mb-4 accent-text">Tahap 2: Layering (Memisahkan Jejak)</h3>
+                                    <p class="text-sm text-secondary mb-4">Tujuan: Transaksi berlapis-lapis dan sangat kompleks untuk memutus mata rantai antara uang dan sumber kejahatannya. Ini adalah tahap paling rumit.</p>
+
+                                    <!-- Gambar 4 (Layering): Jaringan Kompleks [MODIFIKASI] -->
+                                    <img src="https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?q=80&w=1964&auto=format&fit=crop" 
+                                         alt="Kabel jaringan server yang rumit dan berlapis" 
+                                         class="w-full h-56 object-cover rounded-lg mb-6"
+                                         onerror="this.src='https://placehold.co/600x400/3b82f6/white?text=Jaringan+Kompleks'">
+
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-sm text-left">
+                                            <thead class="text-xs uppercase" style="background-color: color-mix(in srgb, var(--bg-color) 50%, var(--bg-alt-color));">
+                                                <tr>
+                                                    <th scope="col" class="px-6 py-3">Modus Operandi</th>
+                                                    <th scope="col" class="px-6 py-3">Cara Kerja Sederhana</th>
+                                                    <th scope="col" class="px-6 py-3">Contoh di Indonesia</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr class="border-b" style="border-color: var(--border-color);">
+                                                    <td class="px-6 py-4 font-semibold">Perusahaan Cangkang</td>
+                                                    <td class="px-6 py-4">Membuat perusahaan fiktif di negara suaka pajak. Uang ditransfer ke perusahaan ini seolah-olah untuk 'pembayaran jasa konsultan'.</td>
+                                                    <td class="px-6 py-4">Kasus "Panama Papers" banyak mengungkap pejabat Indonesia memiliki perusahaan cangkang.</td>
+                                                </tr>
+                                                <tr class="border-b" style="border-color: var(--border-color);">
+                                                    <td class="px-6 py-4 font-semibold">Pencucian Berbasis Perdagangan</td>
+                                                    <td class="px-6 py-4">Memanipulasi nilai faktur ekspor/impor. Misalnya, impor barang senilai $1 juta, tapi di faktur ditulis $5 juta. Selisih $4 juta adalah uang 'bersih'.</td>
+                                                    <td class="px-6 py-4">Importir tekstil memalsukan dokumen nilai impor untuk 'membersihkan' uang hasil judi online.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="px-6 py-4 font-semibold">Aset Kripto & Jasa Pencampur</td>
+                                                    <td class="px-6 py-4">Membeli Bitcoin/crypto, lalu mengirimkannya ke 'jasa pencampur' yang mengacak transaksi, lalu ditarik ke dompet baru.</td>
+                                                    <td class="px-6 py-4">Pelaku kejahatan siber (misal: scamming) sering menggunakan modus ini untuk menyamarkan hasil kejahatannya.</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Tahap 3: Integration -->
+                                <div id="tab-integration" class="tab-content hidden">
+                                    <h3 class="font-bold text-xl mb-4 accent-text">Tahap 3: Integration (Menikmati Hasil)</h3>
+                                    <p class="text-sm text-secondary mb-4">Tujuan: Uang yang sudah 'tercuci' dan sulit dilacak kini kembali ke pelaku dan digunakan seolah-olah itu adalah kekayaan yang sah.</p>
+
+                                    <!-- Gambar 5 (Integration): Investasi Properti [MODIFIKASI BARU] -->
+                                    <img src="https://cdn.pixabay.com/photo/2016/11/18/17/46/house-1836070_1280.jpg" 
+                                         alt="Interior apartemen mewah yang modern" 
+                                         class="w-full h-56 object-cover rounded-lg mb-6"
+                                         onerror="this.src='https://placehold.co/600x400/3b82f6/white?text=Investasi+Properti'">
+
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-sm text-left">
+                                            <thead class="text-xs uppercase" style="background-color: color-mix(in srgb, var(--bg-color) 50%, var(--bg-alt-color));">
+                                                <tr>
+                                                    <th scope="col" class="px-6 py-3">Modus Operandi</th>
+                                                    <th scope="col" class="px-6 py-3">Cara Kerja Sederhana</th>
+                                                    <th scope="col" class="px-6 py-3">Contoh di Indonesia</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr class="border-b" style="border-color: var(--border-color);">
+                                                    <td class="px-6 py-4 font-semibold">Investasi di Sektor Riil</td>
+                                                    <td class="px-6 py-4">Mendirikan atau membeli bisnis yang sah, terutama yang banyak transaksi tunai (restoran, hotel, klub malam, properti).</td>
+                                                    <td class="px-6 py-4">Mantan pejabat korup memiliki jaringan hotel dan restoran mewah sebagai 'pabrik uang' sah miliknya.</td>
+                                                </tr>
+                                                <tr class="border-b" style="border-color: var(--border-color);">
+                                                    <td class="px-6 py-4 font-semibold">Pinjaman Fiktif</td>
+                                                    <td class="px-6 py-4">Pelaku 'meminjam' uang dari perusahaan cangkang miliknya sendiri di luar negeri. Pinjaman itu (yang sebenarnya uang dia sendiri) kini sah.</td>
+                                                    <td class="px-6 py-4">Pengusaha A mengambil pinjaman $10 juta dari "ABC Ltd." di Cayman Islands untuk membangun pabrik.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="px-6 py-4 font-semibold">Pembelian Aset Mewah</td>
+                                                    <td class="px-6 py-4">Membeli aset seperti karya seni, kapal pesiar, jet pribadi, atau klub olahraga atas nama perusahaan yang sah.</td>
+                                                    <td class="px-6 py-4">Terungkapnya kepemilikan aset-aset mewah (lukisan, tas branded) dari hasil kejahatan besar.</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <!-- Bagian 4: Data & Fakta -->
+                    <section id="data" class="scroll-mt-24 fade-in-up">
+                        <h2 class="text-2xl md:text-3xl font-bold mb-8 text-center"><i data-lucide="database" class="w-8 h-8 mr-3 inline-block accent-text"></i>Data & Fakta dari Lapangan</h2>
+                        
+                        <!-- Gambar 6 (Data): Data Finansial [MODIFIKASI BARU] -->
+                         <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop" 
+                             alt="Tampilan layar bursa saham digital" 
+                             class="w-full h-56 object-cover rounded-lg mb-8 deep-card"
+                             onerror="this.src='https://placehold.co/600x400/f43f5e/white?text=Data+Finansial'">
+
+                        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div class="deep-card p-6 text-center">
+                                <i data-lucide="trending-up" class="w-10 h-10 mx-auto mb-3 accent-red"></i>
+                                <h3 class="font-bold text-lg mb-2">> Rp 100 Triliun</h3>
+                                <p class="text-sm text-secondary">Nilai transaksi terkait Judi Online (salah satu sumber TPPU terbesar) yang teridentifikasi PPATK pada Q1 2024.</p>
+                            </div>
+                            <div class="deep-card p-6 text-center">
+                                <i data-lucide="shield" class="w-10 h-10 mx-auto mb-3 accent-red"></i>
+                                <h3 class="font-bold text-lg mb-2">Korupsi & Narkotika</h3>
+                                <p class="text-sm text-secondary">Dua kejahatan asal (*predicate crime*) ini secara konsisten menjadi sumber uang kotor terbesar di Indonesia.</p>
+                            </div>
+                            <div class="deep-card p-6 text-center sm:col-span-2 lg:col-span-1">
+                                <i data-lucide="briefcase" class="w-10 h-10 mx-auto mb-3 accent-red"></i>
+                                <h3 class="font-bold text-lg mb-2">Sektor Risiko Tinggi</h3>
+                                <p class="text-sm text-secondary">Sektor properti, pedagang barang mewah, kasino (judi online), dan penyedia jasa keuangan jadi sasaran utama pencucian uang.</p>
+
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Bagian 5: Glosarium (Accordion) -->
+                    <section id="glosarium" class="scroll-mt-24 fade-in-up">
+                        <h2 class="text-2xl md:text-3xl font-bold mb-8 text-center"><i data-lucide="book-open" class="w-8 h-8 mr-3 inline-block accent-text"></i>Glosarium Istilah Kunci</h2>
+                        
+                        <!-- Glosarium Diperbanyak (Total 25) -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Item 1-8 (Existing) -->
+                            <div class="glossary-card">
+                                <button class="glossary-button">
+                                    <span>TPPU (Tindak Pidana Pencucian Uang)</span>
+                                    <i data-lucide="plus" class="w-5 h-5 glossary-icon"></i>
+                                </button>
+                                <div class="glossary-content">
+                                    <p>Nama resmi di Indonesia untuk *Money Laundering*. Yaitu perbuatan menyembunyikan atau menyamarkan asal-usul uang/harta kekayaan hasil tindak pidana.</p>
+                                </div>
+                            </div>
+                            <div class="glossary-card">
+                                <button class="glossary-button">
+                                    <span>PPATK</span>
+                                    <i data-lucide="plus" class="w-5 h-5 glossary-icon"></i>
+                                </button>
+                                <div class="glossary-content">
+                                    <p>Pusat Pelaporan dan Analisis Transaksi Keuangan. Lembaga intelijen keuangan Indonesia yang bertugas mencegah dan memberantas TPPU.</p>
+                                </div>
+                            </div>
+                            <div class="glossary-card">
+                                <button class="glossary-button">
+                                    <span>Kejahatan Asal (Predicate Crime)</span>
+                                    <i data-lucide="plus" class="w-5 h-5 glossary-icon"></i>
+                                </button>
+                                <div class="glossary-content">
+                                    <p>Kejahatan yang menghasilkan uang haram. Contoh: korupsi, narkotika, penipuan, perjudian, dll. Tidak ada pencucian uang tanpa ada kejahatan asalnya.</p>
+                                </div>
+                            </div>
+                            <div class="glossary-card">
+                                <button class="glossary-button">
+                                    <span>Smurfing</span>
+                                    <i data-lucide="plus" class="w-5 h-5 glossary-icon"></i>
+                                </button>
+                                <div class="glossary-content">
+                                    <p>Modus memecah transaksi besar menjadi transaksi kecil-kecil untuk menghindari batas pelaporan (diberi nama seperti karakter kartun Smurf yang kecil-kecil tapi banyak).</p>
+                                </div>
+                            </div>
+                            <div class="glossary-card">
+                                <button class="glossary-button">
+                                    <span>Perusahaan Cangkang (Shell Company)</span>
+                                    <i data-lucide="plus" class="w-5 h-5 glossary-icon"></i>
+                                </button>
+                                <div class="glossary-content">
+                                    <p>Perusahaan yang ada di atas kertas (legal) tapi tidak punya aktivitas bisnis, karyawan, atau kantor yang nyata. Dibuat hanya untuk menampung atau mentransfer dana.</p>
+                                </div>
+                            </div>
+                            <div class="glossary-card">
+                                <button class="glossary-button">
+                                    <span>Suaka Pajak (Tax Haven)</span>
+                                    <i data-lucide="plus" class="w-5 h-5 glossary-icon"></i>
+                                </button>
+                                <div class="glossary-content">
+                                    <p>Negara atau yurisdiksi yang menawarkan pajak sangat rendah (atau 0%) dan kerahasiaan bank yang ketat, sehingga ideal untuk menyembunyikan kekayaan. Contoh: Panama, Cayman Islands, British Virgin Islands.</p>
+                                </div>
+                            </div>
+                             <div class="glossary-card">
+                                <button class="glossary-button">
+                                    <span>Pemilik Manfaat (Beneficial Owner)</span>
+                                    <i data-lucide="plus" class="w-5 h-5 glossary-icon"></i>
+                                </button>
+                                <div class="glossary-content">
+                                    <p>Orang atau individu yang pada akhirnya memiliki atau mengendalikan suatu aset/perusahaan, meskipun secara legal namanya tidak tercantum (menggunakan nama orang lain/nominee).</p>
+                                </div>
+                            </div>
+                            <div class="glossary-card">
+                                <button class="glossary-button">
+                                    <span>Pencucian Berbasis Perdagangan</span>
+                                    <i data-lucide="plus" class="w-5 h-5 glossary-icon"></i>
+                                </button>
+                                <div class="glossary-content">
+                                    <p>Modus memanipulasi nilai faktur (invoice) ekspor atau impor barang untuk memindahkan uang lintas negara secara terselubung.</p>
+                                </div>
+                            </div>
+
+                            <!-- Item 9-25 (Baru) -->
+                            <div class="glossary-card">
+                                <button class="glossary-button">
+                                    <span>Nominee</span>
+                                    <i data-lucide="plus" class="w-5 h-5 glossary-icon"></i>
+                                </button>
+                                <div class="glossary-content">
+                                    <p>Orang atau perusahaan yang "dipinjam nama" untuk menyembunyikan identitas Pemilik Manfaat (Beneficial Owner) yang sebenarnya.</p>
+                                </div>
+                            </div>
+                            <div class="glossary-card">
+                                <button class="glossary-button">
+                                    <span>FATF</span>
+                                    <i data-lucide="plus" class="w-5 h-5 glossary-icon"></i>
+                                </button>
+                                <div class="glossary-content">
+                                    <p>Financial Action Task Force. Badan antar-pemerintah global yang menetapkan standar internasional untuk memberantas pencucian uang dan pendanaan terorisme.</p>
+                                </div>
+                            </div>
+                            <div class="glossary-card">
+                                <button class="glossary-button">
+                                    <span>AML / CFT</span>
+                                    <i data-lucide="plus" class="w-5 h-5 glossary-icon"></i>
+                                </button>
+                                <div class="glossary-content">
+                                    <p>Anti-Money Laundering / Counter-Financing of Terrorism. Program dan regulasi untuk mencegah pencucian uang dan pendanaan terorisme.</p>
+                                </div>
+                            </div>
+                            <div class="glossary-card">
+                                <button class="glossary-button">
+                                    <span>KYC (Know Your Customer)</span>
+                                    <i data-lucide="plus" class="w-5 h-5 glossary-icon"></i>
+                                </button>
+                                <div class="glossary-content">
+                                    <p>Prinsip "Mengenali Pengguna Jasa" yang wajib diterapkan bank/lembaga keuangan untuk memverifikasi identitas nasabah mereka.</p>
+                                </div>
+                            </div>
+                            <div class="glossary-card">
+                                <button class="glossary-button">
+                                    <span>CDD (Customer Due Diligence)</span>
+                                    <i data-lucide="plus" class="w-5 h-5 glossary-icon"></i>
+                                </button>
+                                <div class="glossary-content">
+                                    <p>Uji tuntas nasabah. Proses lebih mendalam dari KYC untuk menilai risiko nasabah terlibat dalam TPPU. Mencakup pemahaman profil dan sumber dana.</p>
+                                </div>
+                            </div>
+                            <div class="glossary-card">
+                                <button class="glossary-button">
+                                    <span>EDD (Enhanced Due Diligence)</span>
+                                    <i data-lucide="plus" class="w-5 h-5 glossary-icon"></i>
+                                </button>
+                                <div class="glossary-content">
+                                    <p>Uji tuntas yang lebih ketat dan mendalam, wajib dilakukan untuk nasabah berisiko tinggi, seperti Politically Exposed Person (PEP).</p>
+                                </div>
+                            </div>
+                            <div class="glossary-card">
+                                <button class="glossary-button">
+                                    <span>STR (Suspicious Transaction Report)</span>
+                                    <i data-lucide="plus" class="w-5 h-5 glossary-icon"></i>
+                                </button>
+                                <div class="glossary-content">
+                                    <p>Laporan Transaksi Keuangan Mencurigakan. Laporan yang wajib dikirim bank/profesi ke PPATK jika menemukan transaksi yang tidak wajar.</p>
+                                </div>
+                            </div>
+                            <div class="glossary-card">
+                                <button class="glossary-button">
+                                    <span>CTR (Cash Transaction Report)</span>
+                                    <i data-lucide="plus" class="w-5 h-5 glossary-icon"></i>
+                                </button>
+                                <div class="glossary-content">
+                                    <p>Laporan Transaksi Keuangan Tunai. Laporan yang wajib dikirim ke PPATK untuk setiap transaksi tunai di atas batas tertentu (misal: Rp 500 juta).</p>
+                                </div>
+                            </div>
+                            <div class="glossary-card">
+                                <button class="glossary-button">
+                                    <span>PEP (Politically Exposed Person)</span>
+                                    <i data-lucide="plus" class="w-5 h-5 glossary-icon"></i>
+                                </button>
+                                <div class="glossary-content">
+                                    <p>Individu yang memegang jabatan publik penting (pejabat, politisi) serta keluarga dan kerabat dekatnya, yang dianggap berisiko tinggi terlibat korupsi.</p>
+                                </div>
+                            </div>
+                            <div class="glossary-card">
+                                <button class="glossary-button">
+                                    <span>Gatekeeper</span>
+                                    <i data-lucide="plus" class="w-5 h-5 glossary-icon"></i>
+                                </button>
+                                <div class="glossary-content">
+                                    <p>Pihak "penjaga gerbang" non-keuangan seperti notaris, pengacara, akuntan, dan agen properti yang dapat dimanfaatkan (sengaja/tidak) dalam TPPU.</p>
+                                </div>
+                            </div>
+                            <div class="glossary-card">
+                                <button class="glossary-button">
+                                    <span>Judi Online</span>
+                                    <i data-lucide="plus" class="w-5 h-5 glossary-icon"></i>
+                                </button>
+                                <div class="glossary-content">
+                                    <p>Salah satu kejahatan asal (predicate crime) dengan perputaran uang sangat tinggi dan menjadi sumber TPPU yang signifikan di Indonesia.</p>
+                                </div>
+                            </div>
+                            <div class="glossary-card">
+                                <button class="glossary-button">
+                                    <span>Hawala</span>
+                                    <i data-lucide="plus" class="w-5 h-5 glossary-icon"></i>
+                                </button>
+                                <div class="glossary-content">
+                                    <p>Sistem transfer uang informal berbasis kepercayaan yang beroperasi di luar sistem perbankan formal, sering disalahgunakan untuk memindahkan dana gelap.</p>
+                                </div>
+                            </div>
+                            <div class="glossary-card">
+                                <button class="glossary-button">
+                                    <span>Fintech / P2P Lending</span>
+                                    <i data-lucide="plus" class="w-5 h-5 glossary-icon"></i>
+                                </button>
+                                <div class="glossary-content">
+                                    <p>Platform keuangan digital yang berpotensi menjadi sarana baru untuk TPPU (misal: pinjaman fiktif) jika pengawasan KYC-nya lemah.</p>
+                                </div>
+                            </div>
+                            <div class="glossary-card">
+                                <button class="glossary-button">
+                                    <span>Aset Kripto (Crypto Asset)</span>
+                                    <i data-lucide="plus" class="w-5 h-5 glossary-icon"></i>
+                                </button>
+                                <div class="glossary-content">
+                                    <p>Aset digital seperti Bitcoin, sering digunakan dalam tahap Layering karena sifatnya yang anonim/pseudo-anonim dan kemudahan transfer global.</p>
+                                </div>
+                            </div>
+                            <div class="glossary-card">
+                                <button class="glossary-button">
+                                    <span>Jasa Pencampur (Crypto Mixer)</span>
+                                    <i data-lucide="plus" class="w-5 h-5 glossary-icon"></i>
+                                </button>
+                                <div class="glossary-content">
+                                    <p>Layanan online yang mengacak transaksi kripto dari berbagai sumber untuk memutuskan jejak dan menyamarkan asal-usul dana.</p>
+                                </div>
+                            </div>
+                            <div class="glossary-card">
+                                <button class="glossary-button">
+                                    <span>Follow The Money</span>
+                                    <i data-lucide="plus" class="w-5 h-5 glossary-icon"></i>
+                                </button>
+                                <div class="glossary-content">
+                                    <p>Pendekatan investigasi yang fokus pada "mengikuti aliran uang" untuk menemukan pelaku kejahatan dan kejahatan asalnya.</p>
+                                </div>
+                            </div>
+                            <div class="glossary-card">
+                                <button class="glossary-button">
+                                    <span>Penyedia Barang dan Jasa (PBJ)</span>
+                                    <i data-lucide="plus" class="w-5 h-5 glossary-icon"></i>
+                                </button>
+                                <div class="glossary-content">
+                                    <p>Profesi di luar sektor keuangan yang wajib melapor ke PPATK, seperti dealer mobil mewah, agen properti, dan pedagang perhiasan.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Bagian 6: Penutup & Refleksi -->
+                    <section id="penutup" class="scroll-mt-24 fade-in-up">
+                        <h2 class="text-2xl md:text-3xl font-bold mb-8 text-center"><i data-lucide="lightbulb" class="w-8 h-8 mr-3 inline-block accent-text"></i>Refleksi: Uang Haram Tak Pernah Bersih</h2>
+                        <div class="deep-card p-6 md:p-8">
+                            <p class="text-secondary text-center max-w-3xl mx-auto">
+                                Memahami modus pencucian uang adalah langkah pertama untuk memberantasnya. Sekalipun tampak "bersih" di permukaan melalui investasi properti atau bisnis yang sah, uang tersebut tetap membawa noda dari kejahatan asalnya—korupsi yang merugikan negara, narkotika yang merusak generasi, atau penipuan yang menghancurkan hidup orang lain.
+                                <br><br>
+                                Sebagai masyarakat, kewaspadaan kritis adalah kuncinya. Dengan regulasi yang ketat dan kesadaran publik, kita dapat mempersempit ruang gerak para pelaku dan memastikan sistem keuangan kita tetap sehat dan berintegritas.
+                            </p>
+                        </div>
+                    </section>
+                </div>
+                
+                 <!-- Footer -->
+                <footer class="border-t mt-16 md:mt-24 pt-8" style="border-color: var(--border-color);">
+                    <div class="text-center text-sm text-secondary">
+                         <!-- Teks "Kajian Analitis Modus TPPU Indonesia." telah dihapus sesuai permintaan -->
+                         <!-- Disclaimer telah dihapus sesuai permintaan -->
+                    </div>
+                </footer>
+            </main>
+        </div>
+    </div>
+
+    <!-- Tombol Back to Top Baru -->
+    <button id="back-to-top" title="Kembali ke atas">
+        <i data-lucide="arrow-up" class="w-5 h-5"></i>
+    </button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+            
+            // --- Theme Switcher ---
+            const themeButtons = document.querySelectorAll('#theme-light, #theme-dark, #theme-system');
+            const mobileThemeButtons = document.querySelectorAll('#theme-light-mobile, #theme-dark-mobile, #theme-system-mobile');
+            const htmlEl = document.documentElement;
+            const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+            const updateActiveButton = (theme) => {
+                const allButtons = [...themeButtons, ...mobileThemeButtons];
+                allButtons.forEach(btn => {
+                    btn.style.color = 'var(--text-secondary-color)';
+                    btn.classList.remove('active-theme-btn');
+                    
+                    if(theme === 'light') {
+                        btn.closest('div').querySelector('[id*="light"]').classList.add('active-theme-btn');
+                    } else if(theme === 'dark') {
+                        btn.closest('div').querySelector('[id*="dark"]').classList.add('active-theme-btn');
+                    } else {
+                        btn.closest('div').querySelector('[id*="system"]').classList.add('active-theme-btn');
+                    }
+                });
+                
+                // Ganti style tombol aktif
+                document.querySelectorAll('.active-theme-btn').forEach(btn => {
+                     btn.style.color = 'var(--accent-color)';
+                });
+            };
+            
+            const applyTheme = (theme) => {
+                const effectiveTheme = (theme === 'system') 
+                    ? (systemThemeQuery.matches ? 'dark' : 'light') 
+                    : theme;
+                htmlEl.setAttribute('data-theme', effectiveTheme);
+            };
+
+            const setTheme = (theme) => {
+                localStorage.setItem('theme', theme);
+                updateActiveButton(theme);
+                applyTheme(theme);
+            }
+            
+            const allButtons = [...themeButtons, ...mobileThemeButtons];
+            allButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    let theme = 'system';
+                    if (button.id.includes('light')) theme = 'light';
+                    else if (button.id.includes('dark')) theme = 'dark';
+                    setTheme(theme);
+                });
+            });
+
+            systemThemeQuery.addEventListener('change', () => {
+                if (localStorage.getItem('theme') === 'system') {
+                    applyTheme('system');
+                }
+            });
+
+            const savedTheme = localStorage.getItem('theme') || 'system';
+            setTheme(savedTheme);
+
+            // --- Mobile Menu ---
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileNavMenu = document.getElementById('mobile-nav-menu');
+            const menuIcon = mobileMenuBtn.querySelector('[data-lucide="menu"]');
+            const xIcon = mobileMenuBtn.querySelector('[data-lucide="x"]');
+
+            mobileMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                mobileNavMenu.classList.toggle('open');
+                menuIcon.classList.toggle('hidden');
+                xIcon.classList.toggle('hidden');
+            });
+
+            document.querySelectorAll('.mobile-link').forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileNavMenu.classList.remove('open');
+                    menuIcon.classList.remove('hidden');
+                    xIcon.classList.add('hidden');
+                });
+            });
+            
+            document.addEventListener('click', (e) => {
+                if (!mobileNavMenu.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+                     mobileNavMenu.classList.remove('open');
+                     menuIcon.classList.remove('hidden');
+                     xIcon.classList.add('hidden');
+                }
+            });
+
+            // --- Scrollspy for Navigation ---
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const activateLink = (id) => {
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${id}`) {
+                        link.classList.add('active');
+                    }
+                });
+            };
+            const scrollSpyObserver = new IntersectionObserver((entries) => {
+                let lastActiveSectionId = null;
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        lastActiveSectionId = entry.target.id;
+                    }
+                });
+                 if (lastActiveSectionId) {
+                    activateLink(lastActiveSectionId);
+                }
+            }, { rootMargin: '-20% 0px -70% 0px', threshold: 0.1 });
+            sections.forEach(section => scrollSpyObserver.observe(section));
+
+            // --- Animation on Scroll ---
+            const animationObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.transitionDelay = entry.target.dataset.delay || '0s';
+                        entry.target.classList.add('visible');
+                        animationObserver.unobserve(entry.target); // Animasi sekali saja
+                    }
+                });
+            }, { threshold: 0.1 });
+            document.querySelectorAll('.fade-in-up').forEach((el, index) => {
+                el.dataset.delay = `${index * 0.05}s`;
+                animationObserver.observe(el);
+            });
+
+            // --- Accordion Logic (Glosarium) ---
+            document.querySelectorAll('.glossary-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const content = button.nextElementSibling;
+                    button.classList.toggle('active'); // Toggle class 'active'
+                    
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                    } else {
+                        // Buka yang ini
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                    }
+                });
+            });
+
+            // --- Reading Time Calculator ---
+            function calculateReadingTime() {
+                const content = document.querySelector('main');
+                if (!content) return;
+                
+                const text = content.innerText;
+                const wordsPerMinute = 200; // Rata-rata kecepatan baca
+                const words = text.trim().split(/\s+/).length;
+                const time = Math.ceil(words / wordsPerMinute);
+                
+                const readingTimeEl = document.getElementById('reading-time');
+                if (readingTimeEl) {
+                    readingTimeEl.innerText = `${time} menit`;
+                }
+            }
+            calculateReadingTime(); // Panggil saat memuat
+
+            // --- Content Protection Logic (Request 4: Pesan toast dihapus) ---
+            
+            // Fungsi notifikasi dihapus, hanya menyisakan pencegahan aksi.
+            // function showProtectionMessage() { ... } // DIHAPUS
+
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                // showProtectionMessage(); // Panggilan dihapus
+            });
+
+            document.addEventListener('keydown', function(e) {
+                // Blok Ctrl+C (copy), Ctrl+X (cut), Ctrl+U (view source), Ctrl+S (save), Ctrl+P (print)
+                if (e.ctrlKey && (e.key === 'c' || e.key === 'x' || e.key === 'u' || e.key === 's' || e.key === 'p')) {
+                    e.preventDefault();
+                    // showProtectionMessage(); // Panggilan dihapus
+                }
+            });
+
+            /* --- LOGIKA NAVIGASI INTERAKTIF BARU --- */
+
+            // --- Logika Back to Top ---
+            const backToTopBtn = document.getElementById('back-to-top');
+            window.onscroll = () => {
+                if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+                    backToTopBtn.style.display = 'flex';
+                } else {
+                    backToTopBtn.style.display = 'none';
+                }
+            };
+            backToTopBtn.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            // --- Logika Tab Interface ---
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetId = button.dataset.target;
+                    
+                    // Nonaktifkan semua tombol & sembunyikan semua konten
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.add('hidden'));
+                    
+                    // Aktifkan tombol yang diklik & tampilkan konten target
+                    button.classList.add('active');
+                    document.getElementById(targetId).classList.remove('hidden');
+
+                    // Re-create icons karena mungkin tersembunyi/dibuat di dalam tab
+                    lucide.createIcons();
+                });
+            });
+
+            // --- Logika Search Filter ---
+            const searchDesktop = document.getElementById('search-desktop');
+            const searchMobile = document.getElementById('search-mobile');
+            const searchableSections = document.querySelectorAll('section[id]');
+
+            const handleSearch = (event) => {
+                const searchTerm = event.target.value.toLowerCase().trim();
+
+                searchableSections.forEach(section => {
+                    const sectionText = section.textContent.toLowerCase();
+                    
+                    if (searchTerm === '') {
+                        section.style.display = 'block'; // Tampilkan semua jika search kosong
+                    } else {
+                        if (sectionText.includes(searchTerm)) {
+                            section.style.display = 'block';
+                        } else {
+                            section.style.display = 'none';
+                        }
+                    }
+                });
+            };
+
+            // Sinkronkan kedua search bar
+            searchDesktop.addEventListener('input', (e) => {
+                searchMobile.value = e.target.value;
+                handleSearch(e);
+            });
+            searchMobile.addEventListener('input', (e) => {
+                searchDesktop.value = e.target.value;
+                handleSearch(e);
+            });
+
+            /* --- AKHIR LOGIKA NAVIGASI BARU --- */
+
+        });
+    </script>
+</body>
+</html>
